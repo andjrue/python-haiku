@@ -49,11 +49,6 @@ from collections import defaultdict
 from count_syllables import count_syllables
 
 
-first_line = []
-second_line = []
-third_line = []
-
-
 def open_file(file):
     with open(file) as f:
         raw_words = f.read()
@@ -80,9 +75,11 @@ def map_two_words(processed_words):
     max_idx = len(processed_words) - 2
     two_word_map = defaultdict(list)
 
-    for i, word in enumerate(processed_words):
-        if i < max_idx:
-            two_word_map[word + " " + processed_words[i + 1]] = processed_words[i + 2]
+    for index, word in enumerate(processed_words):
+        if index < max_idx:
+            key = word + ' ' + processed_words[index + 1]
+            suffix = processed_words[index + 2]
+            two_word_map[key].append(suffix)
     
     return two_word_map
 
@@ -96,7 +93,8 @@ def pick_random_word(processed_words):
         return(first_word, word_syllables)
 
 def build_first_line(first_word, first_word_syllables, one_word_map):
-    global first_line
+    # print("Building First Line")
+    first_line = []
     target = 5
     total_syllables = first_word_syllables
     first_line.append(first_word)
@@ -134,23 +132,28 @@ def build_first_line(first_word, first_word_syllables, one_word_map):
     last_word = first_line[-1]
     last_word_syllables = count_syllables(last_word)
     #print("Last Word: ", last_word)
-    return (last_word, last_word_syllables)
+    # print(first_line)
+    return first_line, last_word, last_word_syllables
 
-def build_second_line(last_word, one_word_map):
-    global second_line
+def build_second_line(last_word, one_word_map, two_word_map, first_line):
+    # print("Building Second Line")
+    second_line = []
     target = 7
     total_syllables = 0
-    next_word = last_word 
+    next_word = first_line[-2] + " " + first_line[-1]
 
+    # print("Line 2 initial syll check: ",total_syllables)
     while total_syllables < target:
-        if next_word in one_word_map:
-            key = random.choice(one_word_map[next_word])
+        # print(total_syllables) - Adding syllables each time, even if the word does work. Sigh. 
+        if next_word in two_word_map:
+            key = random.choice(two_word_map[next_word])
             syllables = count_syllables(key)
+            # print(syllables)
             
             if total_syllables + syllables > target:
-                # print(f"Total Syllables + Syllables exceeds target: ", total_syllables)
-                # print(f"Skipping Word: {key} (> than {target})")
+                # print("Stuck at second line")
                 continue
+                # This isn't prety, but I think it will fix the loop
             
             total_syllables += syllables
             second_line.append(key)
@@ -163,30 +166,36 @@ def build_second_line(last_word, one_word_map):
 
         else:
 
-            key = random.choice(list(one_word_map.keys()))
-            syllables = count_syllables(key)
-            next_word = key
+            next_word = random.choice(list(one_word_map.keys()))
+            syllables = count_syllables(next_word)
+            if total_syllables + syllables <= target:
+
+                total_syllables += syllables
+                second_line.append(next_word)
 
     last_word = second_line[-1]
     last_word_syllables = count_syllables(last_word)
-    # print(second_line)
-    return (last_word, last_word_syllables)
+    #print(second_line)
+    #print(total_syllables)
+    return second_line, last_word, last_word_syllables
 
-def build_third_line(last_word, one_word_map):
-    global third_line
+def build_third_line(last_word, one_word_map, two_word_map, second_line):
+    #print("Building Third Line")
+    third_line = []
     target = 5
     total_syllables = 0
-    next_word = last_word
-    #print("First word values: ", one_word_map.get(next_word))
+    next_word = second_line[-2] + " " + second_line[-1]
 
+    #print("Line 3 initial syll check: ",total_syllables)
     while total_syllables < target:
-        if next_word in one_word_map:
-            key = random.choice(one_word_map[next_word])
+        # print(total_syllables) - Adding syllables each time, even if the word does work. Sigh. 
+        if next_word in two_word_map:
+            key = random.choice(two_word_map[next_word])
             syllables = count_syllables(key)
+            #print(syllables)
             
             if total_syllables + syllables > target:
-                # print(f"Total Syllables + Syllables exceeds target: ", total_syllables)
-                # print(f"Skipping Word: {key} (> than {target})")
+                #print("Stuck at third line")
                 continue
             
             total_syllables += syllables
@@ -197,21 +206,28 @@ def build_third_line(last_word, one_word_map):
             if total_syllables == target:
                 # print(f"Total Syllables == Target: ", total_syllables)
                 break
-        else:
-            key = random.choice(list(one_word_map.keys()))
-            syllables = count_syllables(key)
-            next_word = key
-    # print(third_line)
 
-def print_haiku():
-    print(" ".join(first_line))
-    print(" ".join(second_line))
-    print(" ".join(third_line))
-    # This is cool, didn't know you could do this https://www.geeksforgeeks.org/print-lists-in-python-4-different-ways/
+        else:
+
+            next_word = random.choice(list(one_word_map.keys()))
+            syllables = count_syllables(next_word)
+            if total_syllables + syllables <= target:
+
+                total_syllables += syllables
+                third_line.append(next_word)
+
+    last_word = third_line[-1]
+    last_word_syllables = count_syllables(last_word)
+    #print(third_line)
+    #print(total_syllables)
+    return third_line
+
+def print_haiku(haiku):
+    print("\n")
+    for line in haiku:
+        print(" ".join(line))
 
 def main():
-
-    global second_line, third_line # Even though these are declared in each function, we need to reset one of them everytime someone regenerates a line. 
 
     raw_words = open_file('train.txt')
     processed_words = clean_words(raw_words)
@@ -221,32 +237,41 @@ def main():
     
     first_word, first_word_syllables = pick_random_word(processed_words) # We can use this word as our first key later down the road
 
-    first_line_last_word, first_line_last_word_syllables = build_first_line(first_word, first_word_syllables, one_word_map)
-    second_line_last_word, second_line_last_word_syllables = build_second_line(first_line_last_word, one_word_map)
-    build_third_line(second_line_last_word, one_word_map)
-
-    print_haiku()
+    first_line, first_line_last_word, first_line_last_word_syllables = build_first_line(first_word, first_word_syllables, one_word_map)
+    second_line, second_line_last_word, second_line_last_word_syllables = build_second_line(first_line_last_word, one_word_map, two_word_map, first_line)
+    third_line = build_third_line(second_line_last_word, one_word_map, two_word_map, second_line)
+    
+    haiku = [first_line, second_line, third_line] 
+    print("\n\nPrinting Haiku...")
+    print_haiku(haiku)
 
     print("\nI hope you enjoyed your Haiku. Please see additional options below.\n" + "2 - Regenerate Line 2\n" + "3 - Regenerate Line 3\n" "4 - Exit the program\n")
-    user_input = input("Please make a selection from the list above: ")
+    user_input = input("Please make a selection from the list above\n>> ")
 
-    active = True
 
-    while active:
+    while True:
         if user_input == "2":
             second_line = []
-            build_second_line(first_word, one_word_map)
-            print_haiku()
-            user_input = input("If you would like regenerate line 2, please enter 2. If you would like to regenerate line 3, please enter 3.\nIf you wish to exit the program, enter 4: ")
+            second_line, second_line_last_word, second_line_last_word_syllables = build_second_line(first_line_last_word, one_word_map, two_word_map, first_line)
+            haiku[1] = second_line
+            print_haiku(haiku)
+            user_input = input("If you would like regenerate line 2, please enter 2. If you would like to regenerate line 3, please enter 3.\nIf you wish to exit the program, enter 4.\n >> ")
         elif user_input == "3":
             third_line = []
-            build_third_line(second_line_last_word, one_word_map)
-            print_haiku()
+            third_line = build_third_line(second_line_last_word, one_word_map, two_word_map, second_line)
+            haiku[2] = third_line
+            print_haiku(haiku)
             user_input = input("If you would like to regenerate line 2, please enter 2. If you would like to regenerate line 3, please enter 3.\nIf you wish to exit the program, enter 4.\n >> ")
         elif user_input == "4":
             print("Thank you for using the Haiku Generator!")
-            active = False
-            
+            break
+        else:
+            print("Invalid input. Exiting the program.")
+            break
 
+"""
+This should be working now. I ran it probably 50 times and didn't get caught in the loop I was worried about. I'm confident enough to say that it's working. 
+I also haven't experienced the loop when regenerating the lines. 
+"""
 
 main()
