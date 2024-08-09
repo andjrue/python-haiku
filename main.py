@@ -99,7 +99,6 @@ def build_first_line(first_word, first_word_syllables, one_word_map):
     total_syllables = first_word_syllables
     first_line.append(first_word)
     next_word = first_word
-    #print("First word values: ", one_word_map.get(next_word))
 
     while total_syllables < target:
         if next_word in one_word_map:
@@ -124,18 +123,12 @@ def build_first_line(first_word, first_word_syllables, one_word_map):
             syllables = count_syllables(key)
             next_word = key
 
-
-   
-    # print(first_line)
-    
-    # We are going to return the last word and use it as an argument for our next line
-    last_word = first_line[-1]
-    last_word_syllables = count_syllables(last_word)
+ 
     #print("Last Word: ", last_word)
     # print(first_line)
-    return first_line, last_word, last_word_syllables
+    return first_line
 
-def build_second_line(last_word, one_word_map, two_word_map, first_line):
+def build_second_line(one_word_map, two_word_map, first_line):
     # print("Building Second Line")
     second_line = []
     target = 7
@@ -173,13 +166,11 @@ def build_second_line(last_word, one_word_map, two_word_map, first_line):
                 total_syllables += syllables
                 second_line.append(next_word)
 
-    last_word = second_line[-1]
-    last_word_syllables = count_syllables(last_word)
     #print(second_line)
     #print(total_syllables)
-    return second_line, last_word, last_word_syllables
+    return second_line
 
-def build_third_line(last_word, one_word_map, two_word_map, second_line):
+def build_third_line(one_word_map, two_word_map, second_line):
     #print("Building Third Line")
     third_line = []
     target = 5
@@ -216,8 +207,6 @@ def build_third_line(last_word, one_word_map, two_word_map, second_line):
                 total_syllables += syllables
                 third_line.append(next_word)
 
-    last_word = third_line[-1]
-    last_word_syllables = count_syllables(last_word)
     #print(third_line)
     #print(total_syllables)
     return third_line
@@ -237,9 +226,9 @@ def main():
     
     first_word, first_word_syllables = pick_random_word(processed_words) # We can use this word as our first key later down the road
 
-    first_line, first_line_last_word, first_line_last_word_syllables = build_first_line(first_word, first_word_syllables, one_word_map)
-    second_line, second_line_last_word, second_line_last_word_syllables = build_second_line(first_line_last_word, one_word_map, two_word_map, first_line)
-    third_line = build_third_line(second_line_last_word, one_word_map, two_word_map, second_line)
+    first_line = build_first_line(first_word, first_word_syllables, one_word_map)
+    second_line = build_second_line(one_word_map, two_word_map, first_line)
+    third_line = build_third_line(one_word_map, two_word_map, second_line)
     
     haiku = [first_line, second_line, third_line] 
     print("\n\nPrinting Haiku...")
@@ -252,13 +241,13 @@ def main():
     while True:
         if user_input == "2":
             second_line = []
-            second_line, second_line_last_word, second_line_last_word_syllables = build_second_line(first_line_last_word, one_word_map, two_word_map, first_line)
+            second_line= build_second_line(one_word_map, two_word_map, first_line)
             haiku[1] = second_line
             print_haiku(haiku)
             user_input = input("If you would like regenerate line 2, please enter 2. If you would like to regenerate line 3, please enter 3.\nIf you wish to exit the program, enter 4.\n >> ")
         elif user_input == "3":
             third_line = []
-            third_line = build_third_line(second_line_last_word, one_word_map, two_word_map, second_line)
+            third_line = build_third_line(one_word_map, two_word_map, second_line)
             haiku[2] = third_line
             print_haiku(haiku)
             user_input = input("If you would like to regenerate line 2, please enter 2. If you would like to regenerate line 3, please enter 3.\nIf you wish to exit the program, enter 4.\n >> ")
