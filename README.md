@@ -4,9 +4,11 @@
 
 ### Outstanding Issues (To Be Resolved)
 
-1. **Infinite Loop Bug**: There's a bug where the program can occasionally get stuck in an infinite loop while trying to find the next word. This usually happens when no suitable word is found that fits the remaining syllable count. We'll need to fix that, I guess I could choose a word at random until one works. 
+1. ~~**Infinite Loop Bug**: There's a bug where the program can occasionally get stuck in an infinite loop while trying to find the next word. This usually happens when no suitable word is found that fits the remaining syllable count. We'll need to fix that, I guess I could choose a word at random until one works.~~
+      ** DONE **
 
-2. **User Interface Improvements**: Need to tidy up the user interface a bit. Feels clunky, especially after regen.
+3. ~~**User Interface Improvements**: Need to tidy up the user interface a bit. Feels clunky, especially after regen.~~
+      ** DONE **
 
 ---
 
